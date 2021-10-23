@@ -12,6 +12,7 @@ class User(TimedBaseModel):
     mailing = sa.Column(
         sa.Boolean, server_default=sa.sql.expression.false(), index=True
     )
+    participates_in = sa.Column(sa.ARRAY(sa.Integer))
 
     is_admin = sa.Column(
         sa.Boolean, server_default=sa.sql.expression.false(), index=True
