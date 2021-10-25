@@ -11,7 +11,7 @@ async def add_user(user_id: int, full_name: str, mention: str) -> User:
 
 
 async def add_community(title: str, tz: str, creator_id: int) -> Community:
-    invite_code = uuid.uuid4()
+    invite_code = str(uuid.uuid4())
     return await Community(title=title, invite_code=invite_code, creator_id=creator_id,
                            timezone=tz, participants_ids=[creator_id]).create()
 
