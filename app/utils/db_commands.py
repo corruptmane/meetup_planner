@@ -54,6 +54,8 @@ async def get_communities_by_creator_id(creator_id: int) -> Optional[List[Commun
 
 async def get_communities_participates_in(user_id: int) -> Optional[List[Community]]:
     user_ = await get_user_by_user_id(user_id)
+    if not user_.participates_in:
+        return None
     community_clauses = [Community.id == community_id for community_id in user_.participates_in]
     return await Community.query.where(or_(*community_clauses)).gino.all()
 

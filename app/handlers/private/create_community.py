@@ -85,7 +85,6 @@ async def confirm_create_community(call: CallbackQuery, state: FSMContext) -> No
     title = data.get("title")
     tz = data.get("tz")
     community = await commands.add_community(title, tz, call.from_user.id)
-    await commands.add_community_to_participates_in(community.id, call.from_user.id)
     await call.message.edit_text("You've successfully created community.\n\nHere is invitation code to add people "
                                  f"to this community:\n\n<code>{community.invite_code}</code>")
     await state.reset_state()

@@ -3,9 +3,9 @@ from typing import NoReturn
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
-from aiogram.types import Message, ContentType
+from aiogram.types import Message, ContentType, CallbackQuery
 
-from app.keyboards.inline.list_communities_kb import created_communities_kb
+from app.keyboards.inline.list_communities_kb import *
 from app.utils import db_commands as commands
 
 
@@ -15,20 +15,34 @@ async def cmd_list_created_communities(msg: Message, state: FSMContext) -> NoRet
         await msg.answer("You didn't created any community yet. Create community by typing /create, "
                          "or hit / to see available commands")
         return
-    community_titles = [tuple(community.id, community.title) for community in communities]
+    communities = [tuple([community.id, community.title]) for community in communities]
     await msg.answer("Here you can see all communities created by you. You can enter community control-panel by "
-                     "hitting on one of community titles", reply_markup=created_communities_kb(community_titles))
+                     "hitting on one of community titles", reply_markup=created_communities_kb(communities))
     await state.set_state("created_communities_list")
 
 
-async def cmd_list_communities_participates_in(msg: Message, state: FSMContext) -> NoReturn:  # TODO: end-up that handler
-    communities = await commands.get_communities_participates_in()
+async def cmd_list_communities_participates_in(msg: Message, state: FSMContext) -> NoReturn:
+    communities = await commands.get_communities_participates_in(msg.from_user.id)
     if not communities:
         await msg.answer("You didn't connected to any community. If you have invite code, "
                          "type /connect <code>invite_code</code>")
         return
+    communities = [tuple([community.id, community.title]) for community in communities]
+    await msg.answer("Here you can see all communities you participates in. You can enter community user-panel by "
+                     "hitting on one of community titles", reply_markup=connected_communities_kb(communities))
+    await state.set_state("connected_communities_list")
+
+
+async def exit_from_list_communities(call: CallbackQuery, state: FSMContext) -> NoReturn:
+    await call.answer()
+    await call.message.edit_text("You've successfully exited from list of communities. Hit / to see available commands")
+    await state.reset_state()
 
 
 def setup(dispatcher: Dispatcher) -> NoReturn:
     dispatcher.register_message_handler(cmd_list_created_communities, Command("created"),
                                         content_types=ContentType.TEXT)
+    dispatcher.register_message_handler(cmd_list_communities_participates_in, Command("connected"),
+                                        content_types=ContentType.TEXT)
+    dispatcher.register_callback_query_handler(exit_from_list_communities, text="exit",
+                                               state=["created_communities_list", "connected_communities_list"])
