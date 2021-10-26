@@ -28,15 +28,16 @@ async def cmd_connect_to_community(msg: Message, state: FSMContext) -> NoReturn:
         await state.set_state("enter_invite_code")
         await state.update_data(msg_id=message.message_id)
         return
-    await commands.add_participant_to_community(community.invite_code, msg.from_user.id)
+    await commands.add_participant_to_community(community.id, msg.from_user.id)
+    await commands.add_community_to_participates_in(community.id, msg.from_user.id)
     await msg.answer(f"You've successfully connected to community {community.title}")
     await state.reset_state()
 
 
 async def enter_invite_code(msg: Message, state: FSMContext) -> NoReturn:
+    dp = Dispatcher.get_current()
     data = await state.get_data()
     msg_id = data.get("msg_id")
-    dp = Dispatcher.get_current()
     with suppress(MessageError):
         await dp.bot.delete_message(msg.from_user.id, msg_id)
     invite_code = msg.text.strip("[]")
@@ -46,7 +47,8 @@ async def enter_invite_code(msg: Message, state: FSMContext) -> NoReturn:
                                    "community, or exit this operation", reply_markup=exit_kb)
         await state.update_data(msg_id=message.message_id)
         return
-    await commands.add_participant_to_community(community.invite_code, msg.from_user.id)
+    await commands.add_participant_to_community(community.id, msg.from_user.id)
+    await commands.add_community_to_participates_in(community.id, msg.from_user.id)
     await msg.answer(f"You've successfully connected to community {community.title}")
     await state.reset_state()
 
