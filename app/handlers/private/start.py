@@ -1,4 +1,3 @@
-from contextlib import suppress
 from typing import NoReturn
 
 from aiogram import Dispatcher

@@ -1,5 +1,5 @@
 import uuid
-from typing import List, NoReturn
+from typing import List, NoReturn, Optional
 
 from sqlalchemy.sql.elements import False_, True_, and_
 
@@ -16,7 +16,7 @@ async def add_community(title: str, tz: str, creator_id: int) -> Community:
                            timezone=tz, participants_ids=[creator_id]).create()
 
 
-async def get_user_by_user_id(user_id: int) -> User:
+async def get_user_by_user_id(user_id: int) -> Optional[User]:
     return await User.get(user_id)
 
 
@@ -28,6 +28,10 @@ async def get_admins() -> List[User]:
     return await User.query.where(
         and_(User.is_admin == True_(), User.is_banned == False_())
     ).gino.all()
+
+
+async def get_community_by_invite_code(invite_code: str) -> Optional[Community]:
+    return await Community.query.where(Community.invite_code == invite_code).gino.first()
 
 
 async def update_user_mailing_status(user_id: int) -> NoReturn:
@@ -50,3 +54,9 @@ async def update_user_role(user_id: int, role: str) -> NoReturn:
 async def update_user_naming(user_id: int, full_name: str, mention: str) -> NoReturn:
     _user = await get_user_by_user_id(user_id)
     await _user.update(full_name=full_name, mention=mention).apply()
+
+
+async def add_participant_to_community(invite_code: str, participant_id: int) -> NoReturn:
+    _community = await get_community_by_invite_code(invite_code)
+    participants: list = _community.participants_ids + participant_id
+    await _community.update(participants_ids=participants).apply()

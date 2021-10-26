@@ -1,3 +1,4 @@
+import logging
 from typing import NoReturn
 
 import pytz
@@ -6,8 +7,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
 from aiogram.types import CallbackQuery, ContentType, Message
 
-from app.keyboards.inline.create_community_kb import (
-    confirm_create_community_kb, exit_kb, timezones_kb)
+from app.keyboards.inline.create_community_kb import *
 from app.misc import generate_pages
 from app.utils import db_commands as commands
 
@@ -117,3 +117,6 @@ def setup(dispatcher: Dispatcher) -> NoReturn:
                                                state="confirm_create_community")
     dispatcher.register_callback_query_handler(exit_create_community, text="exit",
                                                state=["choose_tz", "cmd_create_community"])
+
+
+__all__ = ("setup",)

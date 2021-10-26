@@ -9,6 +9,7 @@ async def setup_default_commands(dispatcher: Dispatcher) -> NoReturn:
         [
             BotCommand("start", "Start bot"),
             BotCommand("help", "Help menu"),
-            BotCommand("create", "Create a new community")
+            BotCommand("create", "Create a new community"),
+            BotCommand("connect", "/connect [invite code]. Connect to community (Instantly if invite code provided)")
         ]
     )
