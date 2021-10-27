@@ -7,7 +7,7 @@ from aiogram.dispatcher.filters import Command
 from aiogram.types import CallbackQuery, ContentType, Message
 from aiogram.utils.exceptions import MessageError
 
-from app.keyboards.inline.connect_to_community_kb import exit_kb
+from app.keyboards.inline import exit_kb
 from app.utils import db_commands as commands
 
 

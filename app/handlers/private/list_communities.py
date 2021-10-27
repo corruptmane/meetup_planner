@@ -3,9 +3,9 @@ from typing import NoReturn
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
-from aiogram.types import Message, ContentType, CallbackQuery
+from aiogram.types import CallbackQuery, ContentType, Message
 
-from app.keyboards.inline.list_communities_kb import *
+from app.keyboards.inline import list_communities_kb as kb
 from app.utils import db_commands as commands
 
 
@@ -17,7 +17,7 @@ async def cmd_list_created_communities(msg: Message, state: FSMContext) -> NoRet
         return
     communities = [tuple([community.id, community.title]) for community in communities]
     await msg.answer("Here you can see all communities created by you. You can enter community control-panel by "
-                     "hitting on one of community titles", reply_markup=created_communities_kb(communities))
+                     "hitting on one of community titles", reply_markup=kb.created_communities_kb(communities))
     await state.set_state("created_communities_list")
 
 
@@ -29,7 +29,7 @@ async def cmd_list_communities_participates_in(msg: Message, state: FSMContext) 
         return
     communities = [tuple([community.id, community.title]) for community in communities]
     await msg.answer("Here you can see all communities you participates in. You can enter community user-panel by "
-                     "hitting on one of community titles", reply_markup=connected_communities_kb(communities))
+                     "hitting on one of community titles", reply_markup=kb.connected_communities_kb(communities))
     await state.set_state("connected_communities_list")
 
 

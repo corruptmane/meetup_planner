@@ -1,4 +1,3 @@
-import logging
 from typing import NoReturn
 
 import pytz
@@ -7,7 +6,8 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
 from aiogram.types import CallbackQuery, ContentType, Message
 
-from app.keyboards.inline.create_community_kb import *
+from app.keyboards.inline import create_community_kb as kb
+from app.keyboards.inline import exit_kb
 from app.misc import generate_pages
 from app.utils import db_commands as commands
 
@@ -42,7 +42,7 @@ async def create_community_title(msg: Message, state: FSMContext, discard: bool 
         current_page = data.get("current_page")
     timezones = generate_pages(pytz.all_timezones, 20)
     message = await upd("Choose timezone for your community from list below (click on your timezone)",
-                        reply_markup=timezones_kb(timezones[current_page - 1], current_page, len(timezones)))
+                        reply_markup=kb.timezones_kb(timezones[current_page - 1], current_page, len(timezones)))
     await state.update_data(timezones=timezones, current_page=current_page, msg_id=message.message_id)
     await state.set_state("choose_tz")
 
@@ -63,7 +63,7 @@ async def prev_next_tz_page(call: CallbackQuery, state: FSMContext) -> NoReturn:
             current_page = 1
         else:
             current_page += 1
-    await call.message.edit_reply_markup(timezones_kb(timezones[current_page - 1], current_page, len(timezones)))
+    await call.message.edit_reply_markup(kb.timezones_kb(timezones[current_page - 1], current_page, len(timezones)))
     await state.update_data(current_page=current_page)
 
 
@@ -74,7 +74,7 @@ async def create_community_tz(call: CallbackQuery, state: FSMContext) -> NoRetur
     title = data.get("title")
     await call.message.edit_text(f"Confirm creating new community with these options:\n\nTitle: {title}"
                                  f"\nTimeZone: {tz}\n\nAre you confirm these options?",
-                                 reply_markup=confirm_create_community_kb)
+                                 reply_markup=kb.confirm_create_community_kb)
     await state.set_state("confirm_create_community")
     await state.update_data(tz=tz)
 

@@ -1,8 +1,8 @@
 from typing import List, Tuple, Union
 
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-exit_btn = InlineKeyboardButton("Exit", callback_data="exit")
+from app.keyboards.inline import exit_btn
 
 
 def created_communities_kb(communities: List[Tuple[Union[str, int]]]) -> InlineKeyboardMarkup:
@@ -21,4 +21,4 @@ def connected_communities_kb(communities: List[Tuple[Union[str, int]]]) -> Inlin
     return keyboard
 
 
-__all__ = ("created_communities_kb", "connected_communities_kb")
+__all__ = ("created_communities_kb", "connected_communities_kb",)

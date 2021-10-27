@@ -1,9 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+from app.keyboards.inline import back_btn, exit_btn
 from app.misc import generate_pages
-
-back_btn = InlineKeyboardButton("« Back ", callback_data="back")
-exit_btn = InlineKeyboardButton("Exit", callback_data="exit")
 
 
 def timezones_kb(timezones: list, current_page: int, quantity_of_pages: int) -> InlineKeyboardMarkup:
@@ -42,6 +40,4 @@ confirm_create_community_kb = InlineKeyboardMarkup(inline_keyboard=[
     ]
 ])
 
-exit_kb = InlineKeyboardMarkup(row_width=1, inline_keyboard=[[exit_btn]])
-
-__all__ = ("timezones_kb", "confirm_create_community_kb", "exit_kb")
+__all__ = ("timezones_kb", "confirm_create_community_kb",)
