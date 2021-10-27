@@ -97,7 +97,7 @@ async def back_to_create_community_title(call: CallbackQuery, state: FSMContext)
 
 async def exit_create_community(call: CallbackQuery, state: FSMContext) -> NoReturn:
     await call.answer()
-    await call.message.edit_text("You've successfully exited from community-creating menu. "
+    await call.message.edit_text("You've successfully exited from community-creating menu.\n\n"
                                  "Hit / to see available commands")
     await state.reset_state()
 

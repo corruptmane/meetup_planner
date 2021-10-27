@@ -35,7 +35,8 @@ async def cmd_list_communities_participates_in(msg: Message, state: FSMContext) 
 
 async def exit_from_list_communities(call: CallbackQuery, state: FSMContext) -> NoReturn:
     await call.answer()
-    await call.message.edit_text("You've successfully exited from list of communities. Hit / to see available commands")
+    await call.message.edit_text("You've successfully exited from list of communities."
+                                 "\n\nHit / to see available commands")
     await state.reset_state()
 
 

@@ -1,3 +1,4 @@
+from datetime import date, time
 from typing import List
 
 
@@ -10,4 +11,12 @@ def generate_pages(array: List, articles_on_page: int) -> List[List]:
     return results
 
 
-__all__ = ("generate_pages")
+def check_date(string: str) -> date:
+    pass
+
+
+def check_time(string: str) -> time:
+    pass
+
+
+__all__ = ("generate_pages", "check_date", "check_time")
