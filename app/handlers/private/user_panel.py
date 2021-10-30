@@ -1,16 +1,14 @@
-from contextlib import suppress
-from datetime import datetime
+from datetime import datetime, date
 from typing import NoReturn
 
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
-from aiogram.types import CallbackQuery, Message
-from aiogram.utils.exceptions import MessageError
+from aiogram.types import CallbackQuery, Message, ContentType
 from pytz import timezone
 
 from app.keyboards.inline import back_and_exit_kb
 from app.keyboards.inline import user_panel_kb as kb
-from app.misc.useful_funcs import check_date
+from app.misc import check_date, delete_last_msg, check_time
 from app.utils import db_commands as commands
 
 
@@ -20,39 +18,87 @@ async def community_user_panel(call: CallbackQuery, state: FSMContext) -> NoRetu
     community = await commands.get_community_by_community_id(community_id)
     utc_offset = datetime.now(timezone(community.timezone)).strftime("%z")
     await call.message.edit_text(f"You've successfully entered <i>{community.title}</i> user-panel. Here you can plan "
-                                 f"meeting by tapping on exact button.\n(Timezone: {community.timezone}/"
-                                 f"UTC{utc_offset})", reply_markup=kb.user_panel_kb)
+                                 f"meeting by tapping on button from listed below.\n(Timezone: {community.timezone}/"
+                                 f"UTC{utc_offset}).", reply_markup=kb.user_panel_kb)
     await state.update_data(community_id=community_id)
     await state.set_state("community_user_panel")
 
 
 async def user_panel_enter_date(call: CallbackQuery, state: FSMContext) -> NoReturn:
     await call.answer()
-    message = await call.message.edit_text("Enter meeting date in that format: dd.mm.yyyy. In example: 18.01.2022",
-                                           reply_markup=back_and_exit_kb)
+    message = await call.message.edit_text("Enter meeting date in that format: <code>dd.mm.yyyy</code>. In example: "
+                                           "18.01.2022.", reply_markup=back_and_exit_kb)
     await state.update_data(msg_id=message.message_id)
     await state.set_state("enter_meeting_date")
 
 
-async def user_panel_enter_time(msg: Message, state: FSMContext) -> NoReturn:
-    data = await state.get_data()
-    msg_id = data.get("msg_id")
-    dp = Dispatcher.get_current()
-    with suppress(MessageError):
-        await dp.bot.delete_message(msg.from_user.id, msg_id)
+async def user_panel_enter_time(msg: Message, state: FSMContext, back_to: bool = False) -> NoReturn:
+    msg_text = "Now, enter meeting time in that format: <code>hh:mm</code>. In example: 18:30."
+    if back_to:
+        await msg.edit_text(msg_text, reply_markup=back_and_exit_kb)
+        await state.set_state("enter_meeting_time")
+        return
+    await delete_last_msg(msg, state)
+    error = False
     try:
         check_date(msg.text)
-    except Exception:
-        pass
-    message = await msg.answer("Now, enter meeting time in that format: hh:mm. In example: 18:30",
-                               reply_markup=back_and_exit_kb)
+    except ValueError as err:
+        error = True
+        msg_text = (f"Seems like you made a mistake. Here is an error:\n\n{err.args}\n\nEnter meeting date "
+                    "in that format: <code>dd.mm.yyyy</code>. In example: 18.01.2022")
+    message = await msg.answer(msg_text, reply_markup=back_and_exit_kb)
     await state.update_data(msg_id=message.message_id)
-    await state.set_state("enter_meeting_time")
+    if not error:
+        await state.update_data(user_date=msg.text)
+        await state.set_state("enter_meeting_time")
+
+
+async def back_to_user_panel_enter_time(call: CallbackQuery, state: FSMContext) -> NoReturn:
+    await call.answer()
+    await user_panel_enter_time(call.message, state, True)
+
+
+async def user_panel_enter_meeting_note(msg: Message, state: FSMContext, back_to: bool = False) -> NoReturn:
+    msg_text = "Now, enter meeting note which community creator would see."
+    if back_to:
+        await msg.edit_text(msg_text, reply_markup=back_and_exit_kb)
+        await state.set_state("enter_meeting_note")
+        return
+    await delete_last_msg(msg, state)
+    data = await state.get_data()
+    user_date_str = data.get("user_date")
+    day, month, year = list(map(int, user_date_str.split(".")))
+    community_id = data.get("community_id")
+    community = await commands.get_community_by_community_id(community_id)
+    error = False
+    try:
+        check_time(msg.text, date(year, month, day), timezone(community.timezone))
+    except ValueError as err:
+        error = True
+        msg_text = (f"Seems like you made a mistake. Here is an error:\n\n{err.args}\n\nEnter meeting time "
+                    "in that format: <code>hh:mm</code>. In example: 18:30")
+    message = await msg.answer(msg_text, reply_markup=back_and_exit_kb)
+    await state.update_data(msg_id=message.message_id)
+    if not error:
+        await state.update_data(user_time=msg.text)
+        await state.set_state("enter_meeting_note")
+
+
+async def back_to_user_panel_enter_meeting_note(call: CallbackQuery, state: FSMContext) -> NoReturn:
+    await call.answer()
+    await user_panel_enter_meeting_note(call.message, state, True)
 
 
 def setup(dispatcher: Dispatcher) -> NoReturn:
     dispatcher.register_callback_query_handler(community_user_panel, text_startswith="connected_community:",
                                                state="connected_communities_list")
+    dispatcher.register_callback_query_handler(community_user_panel, text="back", state="enter_meeting_date")
     dispatcher.register_callback_query_handler(user_panel_enter_date, text="plan_meeting", state="community_user_panel")
+    dispatcher.register_callback_query_handler(user_panel_enter_date, text="back", state="enter_meeting_time")
     dispatcher.register_message_handler(user_panel_enter_time, regexp=r"^\d\d\.\d\d\.\d\d\d\d$",
                                         state="enter_meeting_date")
+    dispatcher.register_callback_query_handler(back_to_user_panel_enter_time, text="back", state="enter_meeting_note")
+    dispatcher.register_message_handler(user_panel_enter_meeting_note, content_types=ContentType.TEXT,
+                                        state="enter_meeting_time")
+    dispatcher.register_callback_query_handler(back_to_user_panel_enter_meeting_note, text="back",
+                                               state=None)  # TODO: end it

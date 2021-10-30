@@ -1,1 +1,2 @@
-from .useful_funcs import generate_pages
+from .useful_funcs import *
+from .exceptions import *

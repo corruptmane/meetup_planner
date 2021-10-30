@@ -7,3 +7,6 @@ environs~=9.3.2
 alembic~=1.5.8
 psycopg2-binary~=2.8.6
 aiogram_broadcaster~=0.0.5
+
+asyncpg~=0.22.0
+pytz~=2021.1
