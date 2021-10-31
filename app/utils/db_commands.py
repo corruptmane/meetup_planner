@@ -1,9 +1,11 @@
 import uuid
+from datetime import datetime
 from typing import List, NoReturn, Optional
 
 from sqlalchemy.sql.elements import False_, True_, and_, or_
 
 from app.models import *
+from app.models.meeting import MeetingTypeEnum, MeetingStatusEnum
 
 
 async def add_user(user_id: int, full_name: str, mention: str) -> User:
@@ -18,14 +20,27 @@ async def add_community(title: str, tz: str, creator_id: int) -> Community:
 
 async def add_participant_to_community(community_id: int, participant_id: int) -> NoReturn:
     community_ = await get_community_by_community_id(community_id)
-    participants: list = [*community_.participants_ids, participant_id]
+    if community_.participants_ids:
+        participants: list = [*community_.participants_ids, participant_id]
+    else:
+        participants: list = [participant_id]
     await community_.update(participants_ids=participants).apply()
 
 
 async def add_community_to_participates_in(community_id: int, user_id: int) -> NoReturn:
     user_ = await get_user_by_user_id(user_id)
-    participates_in: list = [*user_.participates_in, community_id]
-    await user_.update(participates_in=participates_in)
+    if user_.participates_in:
+        participates_in: list = [*user_.participates_in, community_id]
+    else:
+        participates_in: list = [community_id]
+    await user_.update(participates_in=participates_in).apply()
+
+
+async def add_meeting(community_id: int, creator_id: int, planned_to: datetime,
+                      note: str, type_of_meeting: str) -> Meeting:
+    enum_type_of_meeting = MeetingTypeEnum.group if type_of_meeting == "group" else MeetingTypeEnum.personal
+    return await Meeting(community_id=community_id, creator_id=creator_id, type_of_meeting=enum_type_of_meeting,
+                         status=MeetingStatusEnum.created, planned_to=planned_to, note=note).create()
 
 
 async def get_user_by_user_id(user_id: int) -> Optional[User]:

@@ -2,7 +2,7 @@ from typing import NoReturn
 
 from aiogram import Dispatcher
 from aiogram.dispatcher.filters import Command
-from aiogram.types import ContentType, Message
+from aiogram.types import Message, ContentType
 from asyncpg import UniqueViolationError
 
 from app.utils import db_commands as commands
@@ -17,9 +17,4 @@ async def start_bot(msg: Message) -> NoReturn:
 
 
 def setup(dispatcher: Dispatcher) -> NoReturn:
-    dispatcher.register_message_handler(
-        start_bot, Command("start"), content_types=ContentType.TEXT, state="*"
-    )
-
-
-__all__ = ["setup"]
+    dispatcher.register_message_handler(start_bot, Command("start"), content_types=ContentType.TEXT, state="*")

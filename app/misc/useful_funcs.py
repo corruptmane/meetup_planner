@@ -44,7 +44,7 @@ def check_date(string: str) -> NoReturn:
 
 
 def check_time(string: str, user_date: date, tz: timezone) -> NoReturn:
-    hour, minute = list(map(int, string.split(".")))
+    hour, minute = list(map(int, string.split(":")))
     try:
         time(hour, minute)
     except ValueError as err:
