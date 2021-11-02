@@ -2,8 +2,6 @@
 
 set -e
 
-if [ -n "${RUN_MIGRATIONS}" ]; then
-    alembic upgrade head
-fi
+[ -n "${RUN_MIGRATIONS}" ] && alembic upgrade head
 
 exec python -O -m app
