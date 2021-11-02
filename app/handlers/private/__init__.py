@@ -2,7 +2,8 @@ from typing import NoReturn
 
 from aiogram import Dispatcher
 
-from app.handlers.private import (first, create_community, connect_to_community, list_communities, user_panel, last)
+from app.handlers.private import (connect_to_community, create_community,
+                                  first, last, list_communities, user_panel)
 
 
 def setup(dispatcher: Dispatcher) -> NoReturn:

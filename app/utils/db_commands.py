@@ -1,11 +1,11 @@
 import uuid
 from datetime import datetime
-from typing import List, NoReturn, Optional
+from typing import List, NoReturn, Optional, Tuple
 
 from sqlalchemy.sql.elements import False_, True_, and_, or_
 
 from app.models import *
-from app.models.meeting import MeetingTypeEnum, MeetingStatusEnum
+from app.models.meeting import MeetingStatusEnum, MeetingTypeEnum
 
 
 async def add_user(user_id: int, full_name: str, mention: str) -> User:
@@ -55,8 +55,20 @@ async def get_admins() -> Optional[List[User]]:
     return await User.query.where(and_(User.is_admin == True_(), User.is_banned == False_())).gino.all()
 
 
-async def get_community_by_invite_code(invite_code: str) -> Optional[Community]:
-    return await Community.query.where(Community.invite_code == invite_code).gino.first()
+async def get_users_to_startup_update(admins_ids: List[int]) -> Optional[List[User]]:
+    actual_admins = await get_admins()
+    clauses = [User.user_id == admin_id for admin_id in admins_ids]
+    users_to_check = await User.query.where(or_(*clauses)).gino.all()
+    return list(set(list(*actual_admins, *users_to_check)))
+
+
+async def get_community_by_invite_code(invite_code: str, user_id: int) -> Optional[Tuple[Community, User]]:
+    community_ = await Community.query.where(Community.invite_code == invite_code).gino.first()
+    if community_:
+        user_ = await get_user_by_user_id(user_id)
+        return community_, user_
+    else:
+        return None
 
 
 async def get_community_by_community_id(community_id: int) -> Optional[Community]:

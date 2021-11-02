@@ -1,7 +1,7 @@
 from typing import NoReturn
 
 from aiogram import Dispatcher
-from aiogram.types import Message, CallbackQuery, ContentType
+from aiogram.types import CallbackQuery, ContentType, Message
 
 
 async def non_tracking_message(msg: Message) -> NoReturn:

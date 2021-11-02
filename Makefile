@@ -56,7 +56,7 @@ stop:
 	sudo docker compose down
 
 black:
-	python -m black . --exclude \[pgdata\|redis\]
+	python -m black . --exclude [pgdata\|redis]
 
 isort:
 	python -m isort . --skip pgdata --skip redis

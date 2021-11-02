@@ -1,5 +1,5 @@
 from contextlib import suppress
-from datetime import datetime, date, time
+from datetime import date, datetime, time
 from typing import List, NoReturn
 
 from aiogram import Dispatcher
